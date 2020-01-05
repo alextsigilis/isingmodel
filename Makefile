@@ -1,24 +1,45 @@
+# The Shell you're using
+SHELL := /bin/bash
+
+# The C compiler
 CC = clang
 
-CFLAGS = -O0 -Wall -g
+# Flags for the gcc
+CFLAGS = -O3 -Wall -g
 
-main = main.c
+# Include paths for header files
+INC = -Iinc/ 
 
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% #
+# Paths for libriries to link
+LDFLAGS = 
 
-sequential: ising_v0.a $(main)
-	$(CC) $(CFLAGS) -o sequential $(main) $<
-	rm -rf $< *.dSYM
+# Libraries to load
+LIBS = -lm
 
-ising_v0.a: ising_v0.o
+# -----=-------=--------=-----=-------=-----=
+
+TYPES = v0
+
+SRC = ising
+
+MAIN = main
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+all: $(addprefix $(MAIN)_, $(TYPES))
+
+$(MAIN)_%: $(MAIN).c lib/$(SRC)_%.a
+	$(CC) $(CFLAGS) $(INC) -o $@ $^ $(LDFLAGS) $(LIBS)
+	rm -rf *.dSYM
+
+lib: $(addsuffix .a, $(addprefix lib/$(SRC)_, $(TYPES)))
+
+
+lib/%.a: lib/%.o
 	ar rcs $@ $<
 	rm $<
 
-ising_v0.o: ising_v0.c
-	$(CC) $(CFLAGS)  -o $@ -c $<
-
+lib/%.o: src/%.c
+	$(CC) $(CFLAGS) $(INC) -o $@ -c $<
 
 clean:
-	rm -rf *.a *.o sequential *.dSYM
-
-
+	rm -rf *.dSYM lib/*.a *~ $(addprefix $(MAIN)_, $(TYPES))
