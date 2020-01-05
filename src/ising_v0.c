@@ -60,7 +60,7 @@ static void swap_mat(int **G, int **H) {
 
 }
 
-int sgn (double d){
+static inline int sgn (double d){
 
 	const double acc=1.0e-8;
 

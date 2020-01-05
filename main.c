@@ -10,13 +10,12 @@ int main ( int argc, char** argv ) {
 
 	n = atoi(argv[1]);
 	k = atoi(argv[2]);
-	G = malloc(n*n*sizeof(int));
+	G = (int*)malloc(n*n*sizeof(int));
 
 	double w[5*5] = {0.004,0.016,0.026,0.016,0.004,0.016,0.071,0.117,0.071,0.016,0.026,0.117,0.000,0.117,0.026,0.016,0.071,0.117,0.071,0.016,0.004,0.016,0.026,0.016,0.004};
 
 	for(int i = 0; i < n*n; i++) G[i] = (rand() % 2)? -1 : +1;
 
-	
 	print_grid(G);
 
 	ising(G,w,k,n);

@@ -1,45 +1,16 @@
-# The Shell you're using
-SHELL := /bin/bash
+all: v0
 
-# The C compiler
-CC = clang
+v0: main.c src/ising_v0.c
+	gcc -Iinc/ -o lib/ising_v0.o -c src/ising_v0.c
+	gcc -Iinc/ -o main_v0 lib/ising_v0.o main.c
+	
 
-# Flags for the gcc
-CFLAGS = -O3 -Wall -g
+v1: main.c src/ising_v1.cu
+	cp main.c main.cu
+	nvcc  -Iinc/ -o lib/ising_v1.o -c src/ising_v1.cu
+	nvcc  -Iinc/ -o main_v1 lib/ising_v1.o main.cu
+	rm main.cu	
 
-# Include paths for header files
-INC = -Iinc/ 
-
-# Paths for libriries to link
-LDFLAGS = 
-
-# Libraries to load
-LIBS = -lm
-
-# -----=-------=--------=-----=-------=-----=
-
-TYPES = v0
-
-SRC = ising
-
-MAIN = main
-
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-all: $(addprefix $(MAIN)_, $(TYPES))
-
-$(MAIN)_%: $(MAIN).c lib/$(SRC)_%.a
-	$(CC) $(CFLAGS) $(INC) -o $@ $^ $(LDFLAGS) $(LIBS)
-	rm -rf *.dSYM
-
-lib: $(addsuffix .a, $(addprefix lib/$(SRC)_, $(TYPES)))
-
-
-lib/%.a: lib/%.o
-	ar rcs $@ $<
-	rm $<
-
-lib/%.o: src/%.c
-	$(CC) $(CFLAGS) $(INC) -o $@ -c $<
 
 clean:
-	rm -rf *.dSYM lib/*.a *~ $(addprefix $(MAIN)_, $(TYPES))
+	rm -rf lib/*.o main_* *.dSYM

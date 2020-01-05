@@ -1,0 +1,5 @@
+sequnential
+
+*.o
+*.a
+*.dSYM
