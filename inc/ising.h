@@ -1,9 +1,10 @@
-
-
-
 #ifndef __ISINGMODEL_H__
 #define __ISINGMODEL_H__
 
+
+#ifndef __device__
+#define __device__
+#endif
 
 //! Ising model evolution
 /*!
@@ -32,7 +33,7 @@ static inline void swap_mat(int **G, int **H);
 	
 	\return	[int] -1 if d is negative, 1 if d is possitive, 0 if d is 0
 */
-static inline int sgn (double d);
+__device__ static inline int sgn (double d);
 
 
 //! Calculate the new spin value based on the old value and the weighted sum of the neighbors
@@ -42,6 +43,6 @@ static inline int sgn (double d);
 
 	\return [int] the new value for the spin
 */
-static inline int update(int old_value, double ws);
+__device__ static inline int update(int old_value, double ws);
 
 #endif /* __ISINGMODEL_H__ */
