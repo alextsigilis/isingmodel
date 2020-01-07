@@ -14,24 +14,22 @@
 
 __global__ void kernel(int* Y, int *X, double *w, int k, int n) {
 
-	int row_index = blockIdx.x * blockDim.x + threadIdx.x,
-			coll_index = blockIdx.y * blockDim.y + threadIdx.y,
-			row_stride = gridDim.x * blockDim.x,
-			coll_stride = gridDim.y * blockDim.y;
+	int stride = gridDim.y * blockDim.y,
+			i = threadIdx.x + blockIdx.x * blockDim.x,
+			j = threadIdx.y + blockIdx.y * blockDim.y;
 
-
-	for(int i = row_index; i < n; i += row_stride) {
-		for(int j = coll_index; j < n; j += coll_stride) {
+	
+	for(; i < n; i += stride ) {
+		for(; j < n; j += stride ) {
 
 			double ws = 0;
 			for(int l = -2; l <= 2; l++)
 				for(int m = -2; m <= 2; m++)
 					ws += weight(l,m) * Xmat(i+l, j+m);
 
-			Ymat(i,j) = update(Xmat(i,j), ws);	
-
+			Ymat(i,j) = update(Xmat(i,j), ws);
 		}
-	}	
+	}
 
 }
 
@@ -40,16 +38,15 @@ __host__ void ising(int* G, double* w, int k, int n) {
 	int *X, *Y;
 	double *d_w;
 
-	cudaMallocManaged(&X, n*n);
-	cudaMallocManaged(&Y, n*n);
-	cudaMallocManaged(&d_w, 5*5);
+	cudaMalloc(&X, n*n*sizeof(int));
+	cudaMalloc(&Y, n*n*sizeof(int));
+	cudaMalloc(&d_w, 5*5*sizeof(double));
 
-	for(int i = 0; i < 5*5; i++) d_w[i] = w[i];
-	for(int i = 0; i < n*n; i++) Y[i] = G[i];
+	cudaMemcpy(d_w, w, 5*5*sizeof(double), cudaMemcpyHostToDevice);
+	cudaMemcpy(Y, G, n*n*sizeof(int), cudaMemcpyHostToDevice);
 
 	dim3 N(BLOCK,BLOCK),
 			 M(THREAD,THREAD);
-
 
 	while(k > 0) {
 		
@@ -62,7 +59,7 @@ __host__ void ising(int* G, double* w, int k, int n) {
 		k--;
 	}
 
-	for(int i = 0; i < n*n; i++) G[i] = Y[i];
+	cudaMemcpy(G, Y, n*n*sizeof(int), cudaMemcpyDeviceToHost);
 
 	cudaFree(X); cudaFree(Y);
 	cudaFree(d_w);
