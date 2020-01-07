@@ -69,7 +69,7 @@ __host__ void ising(int* G, double* w, int k, int n) {
 }
 
 
-__device__ int update(int old_value, double ws) {
+__device__ static inline int update(int old_value, double ws) {
 
 	int sign = sgn(ws);
 
@@ -77,7 +77,7 @@ __device__ int update(int old_value, double ws) {
 
 }
 
-static void swap_mat(int **G, int **H) {
+static inline void swap_mat(int **G, int **H) {
 
 	int *tmp = *H;
 	*H = *G;
@@ -86,7 +86,7 @@ static void swap_mat(int **G, int **H) {
 
 }
 
-__device__ int sgn (double d){
+__device__ inline int sgn (double d){
 
 	const double acc=1.0e-8;
 
