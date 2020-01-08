@@ -12,7 +12,7 @@
 #define			weight(i,j)			w[ (2+i)*5 + (2+j) ]
 
 
-__global__ void kernel(int* Y, int *X, double *w, int k, int n) {
+__global__ void kernel(int* Y, int *X, double *w, int n) {
 
 	int stride = gridDim.y * blockDim.y,
 			i = threadIdx.x + blockIdx.x * blockDim.x,
@@ -52,7 +52,7 @@ __host__ void ising(int* G, double* w, int k, int n) {
 		
 		swap_mat( &X, &Y );
 
-		kernel<<<N,M>>>(Y,X,d_w,k,n);
+		kernel<<<N,M>>>(Y,X,d_w,n);
 
 		cudaDeviceSynchronize();
 

@@ -3,3 +3,9 @@ sequnential
 *.o
 *.a
 *.dSYM
+*.bin
+
+main_v0
+main_v1
+main_v2
+main_v3
