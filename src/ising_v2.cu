@@ -4,6 +4,7 @@
 #include "ising.h"
 
 #define	 		GRID_SZ					256
+#define			THREADS					32
 #define			BLOCK_SZ				32
 
 #define			idx(i,j)				((n+i)%n)*n + (n+j)%n
@@ -15,19 +16,28 @@
 __global__ void kernel(int* Y, int *X, double *w, int n) {
 
 	int stride = gridDim.y * blockDim.y,
-			i = threadIdx.x + blockIdx.x * blockDim.x,
-			j = threadIdx.y + blockIdx.y * blockDim.y;
+			index = threadIdx.x + blockIdx.x * blockDim.x,
+			jndex = threadIdx.y + blockIdx.y * blockDim.y,
+			block_stride = (GRID_SZ / BLOCK_SZ) + (GRID_SZ % BLOCK_SZ);
+
 
 	
-	for(; i < n; i += stride ) {
-		for(; j < n; j += stride ) {
+	for(; index < n; index += stride ) {
+		for(; jndex < n; jndex += stride ) {
 
-			double ws = 0;
-			for(int l = -2; l <= 2; l++)
-				for(int m = -2; m <= 2; m++)
-					ws += weight(l,m) * Xmat(i+l, j+m);
+			for(int i = index; i < n; i += block_stride) {
+				for(int j = jndex; j < n; j += block_stride) {
+				
+				double ws = 0;
+					for(int l = -2; l <= 2; l++)
+						for(int m = -2; m <= 2; m++)
+							ws += weight(l,m) * Xmat(i+l, j+m);
 
-			Ymat(i,j) = update(Xmat(i,j), ws);
+					Ymat(i,j) = update(Xmat(i,j), ws);
+
+				}
+			}
+
 		}
 	}
 
@@ -45,8 +55,10 @@ __host__ void ising(int* G, double* w, int k, int n) {
 	cudaMemcpy(d_w, w, 5*5*sizeof(double), cudaMemcpyHostToDevice);
 	cudaMemcpy(Y, G, n*n*sizeof(int), cudaMemcpyHostToDevice);
 
-	dim3 N( GRID_SZ, GRID_SZ ),
-			 M( BLOCK_SZ, BLOCK_SZ );
+	int num_of_blocks = (GRID_SZ / BLOCK_SZ) + (GRID_SZ % BLOCK_SZ);	
+
+	dim3 N( num_of_blocks, num_of_blocks ),
+			 M( THREADS, THREADS );
 
 	while(k > 0) {
 		

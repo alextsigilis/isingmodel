@@ -15,13 +15,23 @@
 __global__ void kernel(int* Y, int *X, double *w, int n) {
 
 	int stride = gridDim.y * blockDim.y,
-			i = threadIdx.x + blockIdx.x * blockDim.x,
-			j = threadIdx.y + blockIdx.y * blockDim.y;
+			i = threadIdx.y + blockIdx.y * blockDim.y,
+			j = threadIdx.x + blockIdx.x * blockDim.x;
+
+	
+	__shared__ cache[blockDim.y+2][blockDim.x+2];
 
 	
 	for(; i < n; i += stride ) {
 		for(; j < n; j += stride ) {
 
+		
+
+		// Load threads element
+		cache[threadIdx.x+1][threadIdx.y+1] = Xmat(i,j);
+
+		// Load the surrounding elements
+			
 			double ws = 0;
 			for(int l = -2; l <= 2; l++)
 				for(int m = -2; m <= 2; m++)
